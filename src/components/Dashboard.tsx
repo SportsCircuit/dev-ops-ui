@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { Settings2 } from "lucide-react";
+import { Settings2, Plus } from "lucide-react";
 import { Category, Environment } from "@/types";
 import { tools, categories } from "@/data/tools";
 import Header from "@/components/Header";
@@ -66,9 +66,15 @@ export default function Dashboard() {
             <h2 className="text-lg font-bold text-[#0a0a0a] tracking-tight">
               Quick Links
             </h2>
-            <button className="p-2 rounded-lg hover:bg-[#eceef2]/50 transition-colors">
-              <Settings2 className="w-4 h-4 text-[#717182]" />
-            </button>
+            <div className="flex items-center gap-2">
+              <button className="p-2 rounded-lg hover:bg-[#eceef2]/50 transition-colors">
+                <Settings2 className="w-4 h-4 text-[#717182]" />
+              </button>
+              <button className="inline-flex items-center gap-1.5 px-3 h-8 rounded-lg border border-black/10 text-sm font-medium text-[#0a0a0a] hover:bg-[#eceef2]/50 transition-colors">
+                <Plus className="w-3.5 h-3.5" />
+                Add Link
+              </button>
+            </div>
           </div>
           <SearchBar value={search} onChange={setSearch} />
           <CategoryTabs

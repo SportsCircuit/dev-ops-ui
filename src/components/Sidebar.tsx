@@ -19,10 +19,10 @@ const navItems = [
   { label: "Settings", icon: Settings, active: false },
 ];
 
-const roles = ["Developer", "Admin", "Viewer"];
+const roles = ["Admin", "Developer", "Viewer"];
 
 export default function Sidebar() {
-  const [selectedRole, setSelectedRole] = useState("Developer");
+  const [selectedRole, setSelectedRole] = useState("Admin");
   const [roleOpen, setRoleOpen] = useState(false);
 
   return (
@@ -98,10 +98,10 @@ export default function Sidebar() {
             <User className="w-5 h-5 text-[#717182]" />
           </div>
           <div>
-            <p className="text-sm font-medium text-[#0a0a0a]">Demo User</p>
+            <p className="text-sm font-medium text-[#0a0a0a]">Demo Admin</p>
             <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-medium text-[#2b7fff] bg-[#eff6ff] border border-[#bedbff] rounded-full">
-              <Zap className="w-3 h-3" />
-              Dev
+              <Shield className="w-3 h-3" />
+              Admin
             </span>
           </div>
         </div>

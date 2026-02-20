@@ -19,8 +19,8 @@ export default function Header({
 
   return (
     <header className="flex items-center justify-between h-16 px-4 bg-white border-b border-black/10 shadow-sm">
-      <h1 className="text-lg font-semibold capitalize text-[#0a0a0a]">
-        Dashboard
+      <h1 className="text-lg font-semibold text-[#0a0a0a]">
+        dashboard
       </h1>
 
       <div className="flex items-center">

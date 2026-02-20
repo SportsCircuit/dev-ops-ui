@@ -1,4 +1,4 @@
-import { ExternalLink, Globe } from "lucide-react";
+import { ExternalLink, Copy, MoreHorizontal, Globe } from "lucide-react";
 import { Tool, Environment } from "@/types";
 
 const environmentStyles: Record<Environment, { bg: string; text: string }> = {
@@ -32,14 +32,29 @@ export default function ToolCard({ tool }: ToolCardProps) {
             {tool.name}
           </h3>
         </div>
-        <a
-          href={tool.url || "#"}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="opacity-50 hover:opacity-100 transition-opacity shrink-0"
-        >
-          <ExternalLink className="w-3 h-3" />
-        </a>
+        <div className="flex items-center gap-1 shrink-0">
+          <a
+            href={tool.url || "#"}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-center w-6 h-6 rounded-md hover:bg-[#eceef2]/50 transition-colors"
+            title="Open"
+          >
+            <ExternalLink className="w-3 h-3 text-[#717182]" />
+          </a>
+          <button
+            className="flex items-center justify-center w-6 h-6 rounded-md hover:bg-[#eceef2]/50 transition-colors"
+            title="Copy URL"
+          >
+            <Copy className="w-3 h-3 text-[#717182]" />
+          </button>
+          <button
+            className="flex items-center justify-center w-6 h-6 rounded-md hover:bg-[#eceef2]/50 transition-colors"
+            title="More options"
+          >
+            <MoreHorizontal className="w-3 h-3 text-[#717182]" />
+          </button>
+        </div>
       </div>
 
       {/* Description */}

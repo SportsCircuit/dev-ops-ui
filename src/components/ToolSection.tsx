@@ -13,7 +13,7 @@ export default function ToolSection({ category, tools }: ToolSectionProps) {
     <div className="space-y-3">
       {/* Section header */}
       <div className="flex items-center gap-2 pb-1 border-b border-black/10">
-        <h2 className="text-sm font-semibold uppercase tracking-widest text-[rgba(10,10,10,0.8)]">
+        <h2 className="text-sm font-semibold text-[rgba(10,10,10,0.8)]">
           {category}
         </h2>
         <span className="inline-flex items-center justify-center w-5 h-4 text-[10px] font-semibold text-[#030213] bg-[#eceef2] rounded-full border border-transparent">

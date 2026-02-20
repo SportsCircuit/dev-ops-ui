@@ -12,11 +12,14 @@ declare module "lucide-react" {
   type LucideIcon = ComponentType<LucideProps>;
 
   export const ChevronDown: LucideIcon;
+  export const Copy: LucideIcon;
   export const Cpu: LucideIcon;
   export const ExternalLink: LucideIcon;
   export const Globe: LucideIcon;
   export const LayoutDashboard: LucideIcon;
   export const LogOut: LucideIcon;
+  export const MoreHorizontal: LucideIcon;
+  export const Plus: LucideIcon;
   export const Search: LucideIcon;
   export const Settings: LucideIcon;
   export const Settings2: LucideIcon;
