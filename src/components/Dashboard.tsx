@@ -1,13 +1,14 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import { Settings2, Plus } from "lucide-react";
-import { Category, Environment } from "@/types";
-import { tools, categories } from "@/data/tools";
+import { Category, Environment, Tool } from "@/types";
+import { fetchTools, fetchCategories, createTool, CategoryRow } from "@/lib/api";
 import Header from "@/components/Header";
 import SearchBar from "@/components/SearchBar";
 import CategoryTabs from "@/components/CategoryTabs";
 import ToolSection from "@/components/ToolSection";
+import AddLinkModal from "@/components/AddLinkModal";
 
 export default function Dashboard() {
   const [search, setSearch] = useState("");
@@ -15,10 +16,34 @@ export default function Dashboard() {
   const [selectedEnvironment, setSelectedEnvironment] = useState<
     Environment | "All"
   >("Prod");
+  const [addModalOpen, setAddModalOpen] = useState(false);
+  const [toolsList, setToolsList] = useState<Tool[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const loadData = useCallback(async () => {
+    try {
+      setLoading(true);
+      const [toolsData, categoriesData] = await Promise.all([
+        fetchTools(),
+        fetchCategories(),
+      ]);
+      setToolsList(toolsData);
+      setCategories(categoriesData.map((c: CategoryRow) => c.name as Category));
+    } catch (error) {
+      console.error("Failed to load dashboard data:", error);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
   // Filter tools by search, category, and environment
   const filteredTools = useMemo(() => {
-    return tools.filter((tool) => {
+    return toolsList.filter((tool) => {
       const matchesSearch =
         search === "" ||
         tool.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -33,7 +58,7 @@ export default function Dashboard() {
 
       return matchesSearch && matchesCategory && matchesEnv;
     });
-  }, [search, selectedCategory, selectedEnvironment]);
+  }, [search, selectedCategory, selectedEnvironment, toolsList]);
 
   // Group filtered tools by category
   const groupedTools = useMemo(() => {
@@ -60,17 +85,20 @@ export default function Dashboard() {
       />
 
       {/* Sticky sub-header with search + tabs */}
-      <div className="sticky top-0 z-10 bg-white/60 backdrop-blur-sm border-b border-black/10 shadow-sm">
-        <div className="px-6 pt-3 space-y-3">
+      <div className="sticky top-0 z-10 bg-[#f8fafc]/80 backdrop-blur-sm border-b border-black/8">
+        <div className="px-5 pt-2 space-y-2">
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-bold text-[#0a0a0a] tracking-tight">
+            <h2 className="text-sm font-semibold text-[#0a0a0a] tracking-tight">
               Quick Links
             </h2>
             <div className="flex items-center gap-2">
-              <button className="p-2 rounded-lg hover:bg-[#eceef2]/50 transition-colors">
-                <Settings2 className="w-4 h-4 text-[#717182]" />
+              <button className="p-1.5 rounded-md hover:bg-[#eceef2]/50 transition-colors">
+                <Settings2 className="w-3.5 h-3.5 text-[#717182]" />
               </button>
-              <button className="inline-flex items-center gap-1.5 px-3 h-8 rounded-lg border border-black/10 text-sm font-medium text-[#0a0a0a] hover:bg-[#eceef2]/50 transition-colors">
+              <button
+                onClick={() => setAddModalOpen(true)}
+                className="inline-flex items-center gap-1.5 px-2.5 h-7 rounded-md border border-black/8 text-xs font-medium text-[#0a0a0a] hover:bg-[#eceef2]/50 transition-colors"
+              >
                 <Plus className="w-3.5 h-3.5" />
                 Add Link
               </button>
@@ -86,9 +114,13 @@ export default function Dashboard() {
       </div>
 
       {/* Tool sections */}
-      <main className="flex-1 overflow-y-auto bg-white px-6 pt-6 pb-12">
-        <div className="space-y-8">
-          {displayCategories.length > 0 ? (
+      <main className="flex-1 overflow-y-auto bg-[#f8fafc] px-5 pt-4 pb-8">
+        <div className="space-y-5">
+          {loading ? (
+            <div className="flex flex-col items-center justify-center py-20 text-[#717182]">
+              <p className="text-sm">Loading tools...</p>
+            </div>
+          ) : displayCategories.length > 0 ? (
             displayCategories.map((cat) => (
               <ToolSection
                 key={cat}
@@ -103,6 +135,28 @@ export default function Dashboard() {
           )}
         </div>
       </main>
+
+      {/* Add Link Modal */}
+      <AddLinkModal
+        open={addModalOpen}
+        onClose={() => setAddModalOpen(false)}
+        categories={categories}
+        onSubmit={async (data) => {
+          try {
+            const created = await createTool({
+              name: data.title,
+              description: data.description,
+              category: data.category,
+              environments: data.environments,
+              status: "healthy",
+              url: data.url,
+            });
+            setToolsList((prev) => [created, ...prev]);
+          } catch (error) {
+            console.error("Failed to create tool:", error);
+          }
+        }}
+      />
     </div>
   );
 }

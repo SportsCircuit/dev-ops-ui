@@ -14,15 +14,15 @@ export default function CategoryTabs({
   onSelect,
 }: CategoryTabsProps) {
   return (
-    <div className="flex items-center gap-1 overflow-x-auto scrollbar-hide pb-1">
+    <div className="flex items-center gap-0.5 overflow-x-auto scrollbar-hide pb-1.5">
       {categories.map((cat) => (
         <button
           key={cat}
           onClick={() => onSelect(cat)}
-          className={`shrink-0 inline-flex items-center justify-center px-3 py-1 rounded-full text-xs font-medium border transition-colors ${
+          className={`shrink-0 inline-flex items-center justify-center px-2.5 py-1 rounded-md text-[11px] font-medium transition-colors ${
             cat === selected
-              ? "bg-[rgba(3,2,19,0.1)] border-[rgba(3,2,19,0.2)] text-[#030213] shadow-sm"
-              : "border-transparent text-[#717182] hover:bg-[#eceef2]/40"
+              ? "bg-[#030213] text-white shadow-sm"
+              : "text-[#717182] hover:bg-[#eceef2]/50 hover:text-[#0a0a0a]"
           }`}
         >
           {cat}

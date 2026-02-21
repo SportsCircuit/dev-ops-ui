@@ -25,5 +25,20 @@ declare module "lucide-react" {
   export const Settings2: LucideIcon;
   export const Shield: LucideIcon;
   export const User: LucideIcon;
+  export const X: LucideIcon;
   export const Zap: LucideIcon;
+  export const Database: LucideIcon;
+  export const HardDrive: LucideIcon;
+  export const Box: LucideIcon;
+  export const MessageSquare: LucideIcon;
+  export const Cloud: LucideIcon;
+  export const LayoutGrid: LucideIcon;
+  export const GitFork: LucideIcon;
+  export const GitBranch: LucideIcon;
+  export const Code2: LucideIcon;
+  export const AlertTriangle: LucideIcon;
+  export const CheckCircle2: LucideIcon;
+  export const XCircle: LucideIcon;
+  export const Pencil: LucideIcon;
+  export const Trash2: LucideIcon;
 }
