@@ -20,14 +20,15 @@ export default function SwaggerEndpointsView({
   };
 
   return (
-    <div className="grid grid-cols-2 gap-3">
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
       {servicesWithSwagger.map((service) => (
-        <div
+        <article
           key={service.id}
+          aria-label={`${service.name} API documentation`}
           className="bg-white border border-black/8 rounded-lg shadow-sm flex flex-col"
         >
           {/* Header: Service name + External link */}
-          <div className="flex flex-col gap-1 px-5 pt-4 pb-0">
+          <div className="flex flex-col gap-1 px-3 sm:px-5 pt-4 pb-0">
             <div className="flex items-center gap-2">
               <h3 className="text-[13px] font-semibold text-[#0a0a0a] tracking-tight">
                 {service.name}
@@ -36,16 +37,17 @@ export default function SwaggerEndpointsView({
                 href={service.swaggerUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-[#717182] hover:text-[#0a0a0a] transition-colors"
+                className="text-[#717182] hover:text-[#0a0a0a] transition-colors focus:outline-none focus:ring-2 focus:ring-[#2b7fff]/20 rounded"
+                aria-label={`Open ${service.name} Swagger docs`}
               >
-                <ExternalLink className="w-4 h-4" />
+                <ExternalLink className="w-4 h-4" aria-hidden="true" />
               </a>
             </div>
             <p className="text-xs text-[#717182]">{environment} Environment</p>
           </div>
 
           {/* Badges + URL */}
-          <div className="flex flex-col gap-3 px-5 py-3">
+          <div className="flex flex-col gap-3 px-3 sm:px-5 py-3">
             {/* Badges */}
             <div className="flex items-center gap-2">
               {service.apiVersion && (
@@ -62,20 +64,20 @@ export default function SwaggerEndpointsView({
 
             {/* Swagger URL bar */}
             <div className="flex items-center gap-2 bg-[rgba(236,236,240,0.5)] border border-black/8 rounded px-2 py-1.5">
-              <Code2 className="w-3 h-3 text-[#717182] shrink-0" />
+              <Code2 className="w-3 h-3 text-[#717182] shrink-0" aria-hidden="true" />
               <span className="text-[11px] text-[#717182] truncate flex-1">
                 {service.swaggerUrl}
               </span>
               <button
                 onClick={() => handleCopyUrl(service.swaggerUrl!)}
-                className="text-[#717182] hover:text-[#0a0a0a] transition-colors shrink-0"
-                title="Copy URL"
+                className="text-[#717182] hover:text-[#0a0a0a] transition-colors shrink-0 focus:outline-none focus:ring-2 focus:ring-[#2b7fff]/20 rounded"
+                aria-label={`Copy ${service.name} Swagger URL`}
               >
-                <Copy className="w-3.5 h-3.5" />
+                <Copy className="w-3.5 h-3.5" aria-hidden="true" />
               </button>
             </div>
           </div>
-        </div>
+        </article>
       ))}
     </div>
   );

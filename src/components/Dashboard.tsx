@@ -86,20 +86,23 @@ export default function Dashboard() {
 
       {/* Sticky sub-header with search + tabs */}
       <div className="sticky top-0 z-10 bg-[#f8fafc]/80 backdrop-blur-sm border-b border-black/8">
-        <div className="px-5 pt-2 space-y-2">
-          <div className="flex items-center justify-between">
+        <div className="px-3 sm:px-5 pt-2 space-y-2">
+          <div className="flex items-center justify-between gap-2">
             <h2 className="text-sm font-semibold text-[#0a0a0a] tracking-tight">
               Quick Links
             </h2>
-            <div className="flex items-center gap-2">
-              <button className="p-1.5 rounded-md hover:bg-[#eceef2]/50 transition-colors">
-                <Settings2 className="w-3.5 h-3.5 text-[#717182]" />
+            <div className="flex items-center gap-2 shrink-0">
+              <button
+                className="p-1.5 rounded-md hover:bg-[#eceef2]/50 transition-colors focus:outline-none focus:ring-2 focus:ring-[#2b7fff]/20"
+                aria-label="Settings"
+              >
+                <Settings2 className="w-3.5 h-3.5 text-[#717182]" aria-hidden="true" />
               </button>
               <button
                 onClick={() => setAddModalOpen(true)}
-                className="inline-flex items-center gap-1.5 px-2.5 h-7 rounded-md border border-black/8 text-xs font-medium text-[#0a0a0a] hover:bg-[#eceef2]/50 transition-colors"
+                className="inline-flex items-center gap-1.5 px-2.5 h-7 rounded-md border border-black/8 text-xs font-medium text-[#0a0a0a] hover:bg-[#eceef2]/50 transition-colors focus:outline-none focus:ring-2 focus:ring-[#2b7fff]/20"
               >
-                <Plus className="w-3.5 h-3.5" />
+                <Plus className="w-3.5 h-3.5" aria-hidden="true" />
                 Add Link
               </button>
             </div>
@@ -114,10 +117,18 @@ export default function Dashboard() {
       </div>
 
       {/* Tool sections */}
-      <main className="flex-1 overflow-y-auto bg-[#f8fafc] px-5 pt-4 pb-8">
-        <div className="space-y-5">
+      <main
+        id="main-content"
+        className="flex-1 overflow-y-auto bg-[#f8fafc] px-3 sm:px-5 pt-4 pb-8"
+        aria-busy={loading}
+      >
+        <div className="space-y-5" role="region" aria-label="Tool listings">
           {loading ? (
-            <div className="flex flex-col items-center justify-center py-20 text-[#717182]">
+            <div
+              role="status"
+              aria-live="polite"
+              className="flex flex-col items-center justify-center py-20 text-[#717182]"
+            >
               <p className="text-sm">Loading tools...</p>
             </div>
           ) : displayCategories.length > 0 ? (

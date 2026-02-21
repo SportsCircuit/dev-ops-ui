@@ -74,10 +74,10 @@ export default function TechPage() {
       />
 
       {/* Page content */}
-      <main className="flex-1 overflow-y-auto bg-[#f8fafc] px-5 py-5">
+      <main id="main-content" className="flex-1 overflow-y-auto bg-[#f8fafc] px-3 sm:px-5 py-5" aria-busy={loading}>
         <div className="space-y-5">
           {/* Page title + Add Service button */}
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between gap-3">
             <div className="space-y-0.5">
               <h2 className="text-xl font-bold text-[#0a0a0a] tracking-tight">
                 Microservices
@@ -88,10 +88,12 @@ export default function TechPage() {
             </div>
             <button
               onClick={() => setAddModalOpen(true)}
-              className="inline-flex items-center gap-1.5 px-3.5 h-9 rounded-lg bg-[#030213] text-[13px] font-medium text-white hover:bg-[#030213]/90 transition-colors"
+              className="inline-flex items-center gap-1.5 px-3.5 h-9 rounded-lg bg-[#030213] text-[13px] font-medium text-white hover:bg-[#030213]/90 transition-colors shrink-0 focus:outline-none focus:ring-2 focus:ring-[#2b7fff]/20"
+              aria-label="Add new service"
             >
-              <Plus className="w-4 h-4" />
-              Add Service
+              <Plus className="w-4 h-4" aria-hidden="true" />
+              <span className="hidden sm:inline">Add Service</span>
+              <span className="sm:hidden">Add</span>
             </button>
           </div>
 
@@ -100,7 +102,7 @@ export default function TechPage() {
 
           {/* Tab content */}
           {loading ? (
-            <div className="flex flex-col items-center justify-center py-20 text-[#717182]">
+            <div className="flex flex-col items-center justify-center py-20 text-[#717182]" role="status" aria-live="polite">
               <p className="text-sm">Loading microservices...</p>
             </div>
           ) : (

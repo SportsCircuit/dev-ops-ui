@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
 import { tools } from "@/db/schema";
 import { eq } from "drizzle-orm";
+import { toolUpdateSchema } from "@/lib/validators";
 
 // GET /api/tools/[id]
 export async function GET(
@@ -32,15 +33,17 @@ export async function PUT(
   try {
     const { id } = await params;
     const body = await request.json();
+    const result = toolUpdateSchema.safeParse(body);
+    if (!result.success) {
+      return NextResponse.json(
+        { error: "Validation failed", details: result.error.flatten() },
+        { status: 400 }
+      );
+    }
     const [updated] = await db
       .update(tools)
       .set({
-        name: body.name,
-        description: body.description,
-        category: body.category,
-        environments: body.environments,
-        status: body.status,
-        url: body.url,
+        ...result.data,
         updatedAt: new Date(),
       })
       .where(eq(tools.id, id))

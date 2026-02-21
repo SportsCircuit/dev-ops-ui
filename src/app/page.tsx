@@ -1,12 +1,11 @@
-import Sidebar from "@/components/Sidebar";
+import AppShell from "@/components/AppShell";
 import Dashboard from "@/components/Dashboard";
 
 export default function Home() {
   return (
-    <div className="flex h-screen overflow-hidden bg-white">
-      <Sidebar />
+    <AppShell>
       <Dashboard />
-    </div>
+    </AppShell>
   );
 }
 

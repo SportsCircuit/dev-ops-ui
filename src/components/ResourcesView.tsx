@@ -1,47 +1,13 @@
 "use client";
 
 import React from "react";
-import { AlertTriangle, CheckCircle2, XCircle } from "lucide-react";
-import { Microservice, ServiceStatus } from "@/types";
+import { Microservice } from "@/types";
+import { statusConfig } from "@/lib/constants";
 
 interface ResourcesViewProps {
   services: Microservice[];
   environment: string;
 }
-
-const statusConfig: Record<
-  ServiceStatus,
-  { label: string; bg: string; border: string; text: string; icon: React.ReactNode }
-> = {
-  healthy: {
-    label: "Healthy",
-    bg: "bg-[#dcfce7]",
-    border: "border-[#b9f8cf]",
-    text: "text-[#008236]",
-    icon: <CheckCircle2 className="w-4 h-4 text-[#008236]" />,
-  },
-  maintenance: {
-    label: "Maintenance",
-    bg: "bg-[#dbeafe]",
-    border: "border-[#bedbff]",
-    text: "text-[#1447e6]",
-    icon: <AlertTriangle className="w-4 h-4 text-[#1447e6]" />,
-  },
-  degraded: {
-    label: "Degraded",
-    bg: "bg-[#fef3c7]",
-    border: "border-[#fde68a]",
-    text: "text-[#d97706]",
-    icon: <AlertTriangle className="w-4 h-4 text-[#d97706]" />,
-  },
-  down: {
-    label: "Down",
-    bg: "bg-[#ffe2e2]",
-    border: "border-[#ffc9c9]",
-    text: "text-[#c10007]",
-    icon: <XCircle className="w-4 h-4 text-[#c10007]" />,
-  },
-};
 
 export default function ResourcesView({
   services,
@@ -50,7 +16,7 @@ export default function ResourcesView({
   return (
     <div className="bg-white border border-black/8 rounded-lg shadow-sm overflow-hidden">
       {/* Card header */}
-      <div className="px-5 pt-5 pb-3">
+      <div className="px-3 sm:px-5 pt-5 pb-3">
         <h3 className="text-base font-semibold text-[#0a0a0a] tracking-tight">
           Service Resources
         </h3>
@@ -60,23 +26,24 @@ export default function ResourcesView({
       </div>
 
       {/* Table */}
-      <div className="mx-5 mb-5 border border-black/8 rounded-lg overflow-hidden">
-        <table className="w-full">
+      <div className="mx-3 sm:mx-5 mb-5 border border-black/8 rounded-lg overflow-x-auto" tabIndex={0} role="region" aria-label="Resource usage data">
+        <table className="w-full min-w-[560px]">
+          <caption className="sr-only">Service resource usage for {environment}</caption>
           <thead>
             <tr className="bg-[rgba(236,236,240,0.5)] border-b border-black/8">
-              <th className="text-left px-3 py-2.5 text-xs font-medium text-[#717182]">
+              <th scope="col" className="text-left px-3 py-2.5 text-xs font-medium text-[#717182]">
                 Service
               </th>
-              <th className="text-left px-3 py-2.5 text-xs font-medium text-[#717182]">
+              <th scope="col" className="text-left px-3 py-2.5 text-xs font-medium text-[#717182]">
                 CPU
               </th>
-              <th className="text-left px-3 py-2.5 text-xs font-medium text-[#717182]">
+              <th scope="col" className="text-left px-3 py-2.5 text-xs font-medium text-[#717182]">
                 Memory
               </th>
-              <th className="text-left px-3 py-2.5 text-xs font-medium text-[#717182]">
+              <th scope="col" className="text-left px-3 py-2.5 text-xs font-medium text-[#717182]">
                 Pods
               </th>
-              <th className="text-left px-3 py-2.5 text-xs font-medium text-[#717182]">
+              <th scope="col" className="text-left px-3 py-2.5 text-xs font-medium text-[#717182]">
                 Status
               </th>
             </tr>

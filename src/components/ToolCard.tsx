@@ -1,5 +1,5 @@
 import { ExternalLink, Copy, MoreHorizontal, Globe } from "lucide-react";
-import { Tool, Environment } from "@/types";
+import { Tool, Environment, ToolStatus } from "@/types";
 
 const environmentStyles: Record<Environment, { bg: string; text: string }> = {
   Local: { bg: "bg-[#f1f5f9]", text: "text-[#475569]" },
@@ -16,19 +16,27 @@ const statusBorderColor: Record<string, string> = {
   unknown: "border-l-gray-300",
 };
 
+const statusLabel: Record<ToolStatus, string> = {
+  healthy: "Healthy",
+  warning: "Warning",
+  error: "Error",
+  unknown: "Unknown",
+};
+
 interface ToolCardProps {
   tool: Tool;
 }
 
 export default function ToolCard({ tool }: ToolCardProps) {
   return (
-    <div
-      className={`relative bg-white border border-black/8 border-l-[3px] ${statusBorderColor[tool.status]} rounded-lg hover:shadow-md hover:border-black/12 transition-all duration-150 w-full min-w-[180px]`}
+    <article
+      aria-label={`${tool.name} — ${statusLabel[tool.status]}`}
+      className={`relative bg-white border border-black/8 border-l-[3px] ${statusBorderColor[tool.status]} rounded-lg hover:shadow-md hover:border-black/12 transition-all duration-150 w-full min-w-0`}
     >
       {/* Header row */}
       <div className="flex items-center justify-between px-2.5 h-9">
         <div className="flex items-center gap-1.5 min-w-0">
-          <Globe className="w-3.5 h-3.5 text-[#717182] shrink-0" />
+          <Globe className="w-3.5 h-3.5 text-[#717182] shrink-0" aria-hidden="true" />
           <h3 className="text-[13px] font-semibold text-[#0a0a0a] truncate tracking-tight">
             {tool.name}
           </h3>
@@ -38,22 +46,22 @@ export default function ToolCard({ tool }: ToolCardProps) {
             href={tool.url || "#"}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center justify-center w-5 h-5 rounded hover:bg-[#eceef2]/60 transition-colors"
-            title="Open"
+            className="flex items-center justify-center w-5 h-5 rounded hover:bg-[#eceef2]/60 transition-colors focus:outline-none focus:ring-2 focus:ring-[#2b7fff]/20"
+            aria-label={`Open ${tool.name} in new tab`}
           >
-            <ExternalLink className="w-2.5 h-2.5 text-[#717182]" />
+            <ExternalLink className="w-2.5 h-2.5 text-[#717182]" aria-hidden="true" />
           </a>
           <button
-            className="flex items-center justify-center w-5 h-5 rounded hover:bg-[#eceef2]/60 transition-colors"
-            title="Copy URL"
+            className="flex items-center justify-center w-5 h-5 rounded hover:bg-[#eceef2]/60 transition-colors focus:outline-none focus:ring-2 focus:ring-[#2b7fff]/20"
+            aria-label={`Copy URL for ${tool.name}`}
           >
-            <Copy className="w-2.5 h-2.5 text-[#717182]" />
+            <Copy className="w-2.5 h-2.5 text-[#717182]" aria-hidden="true" />
           </button>
           <button
-            className="flex items-center justify-center w-5 h-5 rounded hover:bg-[#eceef2]/60 transition-colors"
-            title="More options"
+            className="flex items-center justify-center w-5 h-5 rounded hover:bg-[#eceef2]/60 transition-colors focus:outline-none focus:ring-2 focus:ring-[#2b7fff]/20"
+            aria-label={`More options for ${tool.name}`}
           >
-            <MoreHorizontal className="w-2.5 h-2.5 text-[#717182]" />
+            <MoreHorizontal className="w-2.5 h-2.5 text-[#717182]" aria-hidden="true" />
           </button>
         </div>
       </div>
@@ -63,8 +71,9 @@ export default function ToolCard({ tool }: ToolCardProps) {
         {tool.description}
       </p>
 
-      {/* Environment tags */}
+      {/* Status (screen-reader only text) + Environment tags */}
       <div className="flex flex-wrap gap-1 px-2.5 py-1.5">
+        <span className="sr-only">Status: {statusLabel[tool.status]}</span>
         {tool.environments.map((env) => (
           <span
             key={env}
@@ -74,6 +83,6 @@ export default function ToolCard({ tool }: ToolCardProps) {
           </span>
         ))}
       </div>
-    </div>
+    </article>
   );
 }

@@ -20,7 +20,7 @@ async function fetchJson<T>(url: string, options?: RequestInit): Promise<T> {
 export interface CategoryRow {
   id: string;
   name: string;
-  sortOrder: string;
+  sortOrder: number;
 }
 
 export async function fetchCategories(): Promise<CategoryRow[]> {

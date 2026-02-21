@@ -7,13 +7,13 @@ services:
     ports:
       - "5432:5432"
     environment:
-      POSTGRES_USER: admin
-      POSTGRES_PASSWORD: secret
-      POSTGRES_DB: devops
+      POSTGRES_USER: sports
+      POSTGRES_PASSWORD: sports_secret
+      POSTGRES_DB: sports_circuit
     volumes:
       - pg-data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U admin -d devops"]
+      test: ["CMD-SHELL", "pg_isready -U sports -d sports_circuit"]
       interval: 5s
       timeout: 5s
       retries: 5

@@ -9,10 +9,14 @@ interface SearchBarProps {
 
 export default function SearchBar({ value, onChange }: SearchBarProps) {
   return (
-    <div className="relative w-full">
-      <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#717182]" />
+    <div role="search" aria-label="Search tools" className="relative w-full">
+      <Search
+        className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#717182]"
+        aria-hidden="true"
+      />
       <input
-        type="text"
+        type="search"
+        aria-label="Search tools and services"
         placeholder="Search tools, services..."
         value={value}
         onChange={(e) => onChange(e.target.value)}

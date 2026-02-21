@@ -88,7 +88,7 @@ export default function SettingsPage() {
       />
 
       {/* Page content */}
-      <main className="flex-1 overflow-y-auto bg-[#f8fafc] px-5 py-5">
+      <main id="main-content" className="flex-1 overflow-y-auto bg-[#f8fafc] px-3 sm:px-5 py-5" aria-busy={loading}>
         <div className="space-y-5">
           {/* Page title */}
           <div className="space-y-0.5">
@@ -103,7 +103,7 @@ export default function SettingsPage() {
           {/* User Management card */}
           <div className="bg-white border border-black/8 rounded-lg shadow-sm">
             {/* Card header */}
-            <div className="flex items-center justify-between px-5 pt-5 pb-4">
+            <div className="flex items-center justify-between px-3 sm:px-5 pt-5 pb-4 gap-3">
               <div>
                 <h3 className="text-base font-semibold text-[#0a0a0a] tracking-tight">
                   User Management
@@ -114,33 +114,37 @@ export default function SettingsPage() {
               </div>
               <button
                 onClick={() => setAddModalOpen(true)}
-                className="inline-flex items-center gap-1.5 px-3.5 h-9 rounded-lg bg-[#030213] text-[13px] font-medium text-white hover:bg-[#030213]/90 transition-colors"
+                className="inline-flex items-center gap-1.5 px-3.5 h-9 rounded-lg bg-[#030213] text-[13px] font-medium text-white hover:bg-[#030213]/90 transition-colors shrink-0 focus:outline-none focus:ring-2 focus:ring-[#2b7fff]/20"
+                aria-label="Add new user"
               >
-                <Plus className="w-4 h-4" />
-                Add User
+                <Plus className="w-4 h-4" aria-hidden="true" />
+                <span className="hidden sm:inline">Add User</span>
+                <span className="sm:hidden">Add</span>
               </button>
             </div>
 
             {/* Table */}
-            <div className="px-5 pb-5">
+            <div className="px-3 sm:px-5 pb-5">
               {loading ? (
-                <div className="flex items-center justify-center py-10 text-[#717182]">
+                <div className="flex items-center justify-center py-10 text-[#717182]" role="status" aria-live="polite">
                   <p className="text-sm">Loading users...</p>
                 </div>
               ) : (
-              <table className="w-full">
+              <div className="overflow-x-auto border border-black/8 rounded-lg" tabIndex={0} role="region" aria-label="User management data">
+              <table className="w-full min-w-[500px]">
+                <caption className="sr-only">Portal users and their roles</caption>
                 <thead>
                   <tr className="border-b border-black/8">
-                    <th className="text-left px-2 py-2 text-xs font-medium text-[#717182]">
+                    <th scope="col" className="text-left px-2 py-2 text-xs font-medium text-[#717182]">
                       User
                     </th>
-                    <th className="text-left px-2 py-2 text-xs font-medium text-[#717182]">
+                    <th scope="col" className="text-left px-2 py-2 text-xs font-medium text-[#717182]">
                       Role
                     </th>
-                    <th className="text-left px-2 py-2 text-xs font-medium text-[#717182]">
+                    <th scope="col" className="text-left px-2 py-2 text-xs font-medium text-[#717182]">
                       Access
                     </th>
-                    <th className="text-right px-2 py-2 text-xs font-medium text-[#717182]">
+                    <th scope="col" className="text-right px-2 py-2 text-xs font-medium text-[#717182]">
                       Actions
                     </th>
                   </tr>
@@ -160,6 +164,7 @@ export default function SettingsPage() {
                           <div className="flex items-center gap-2.5">
                             <div
                               className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold shrink-0 ${colorClass}`}
+                              aria-hidden="true"
                             >
                               {getInitials(user.name)}
                             </div>
@@ -193,17 +198,17 @@ export default function SettingsPage() {
                         <td className="px-2 py-2.5">
                           <div className="flex items-center justify-end gap-1">
                             <button
-                              className="w-8 h-8 flex items-center justify-center rounded-md text-[#717182] hover:text-[#0a0a0a] hover:bg-[#eceef2]/50 transition-colors"
-                              title="Edit user"
+                              className="w-8 h-8 flex items-center justify-center rounded-md text-[#717182] hover:text-[#0a0a0a] hover:bg-[#eceef2]/50 transition-colors focus:outline-none focus:ring-2 focus:ring-[#2b7fff]/20"
+                              aria-label={`Edit ${user.name}`}
                             >
-                              <Pencil className="w-3.5 h-3.5" />
+                              <Pencil className="w-3.5 h-3.5" aria-hidden="true" />
                             </button>
                             <button
                               onClick={() => handleDeleteUser(user.id)}
-                              className="w-8 h-8 flex items-center justify-center rounded-md text-[#d4183d] hover:text-[#c10007] hover:bg-red-50 transition-colors"
-                              title="Delete user"
+                              className="w-8 h-8 flex items-center justify-center rounded-md text-[#d4183d] hover:text-[#c10007] hover:bg-red-50 transition-colors focus:outline-none focus:ring-2 focus:ring-[#2b7fff]/20"
+                              aria-label={`Delete ${user.name}`}
                             >
-                              <Trash2 className="w-3.5 h-3.5" />
+                              <Trash2 className="w-3.5 h-3.5" aria-hidden="true" />
                             </button>
                           </div>
                         </td>
@@ -212,6 +217,7 @@ export default function SettingsPage() {
                   })}
                 </tbody>
               </table>
+              </div>
               )}
             </div>
           </div>

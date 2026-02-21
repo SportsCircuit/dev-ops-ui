@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
 import { tools } from "@/db/schema";
 import { desc } from "drizzle-orm";
+import { toolSchema } from "@/lib/validators";
 
 // GET /api/tools - Get all tools
 export async function GET() {
@@ -24,16 +25,16 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
+    const result = toolSchema.safeParse(body);
+    if (!result.success) {
+      return NextResponse.json(
+        { error: "Validation failed", details: result.error.flatten() },
+        { status: 400 }
+      );
+    }
     const [created] = await db
       .insert(tools)
-      .values({
-        name: body.name,
-        description: body.description,
-        category: body.category,
-        environments: body.environments,
-        status: body.status || "unknown",
-        url: body.url || null,
-      })
+      .values(result.data)
       .returning();
     return NextResponse.json(created, { status: 201 });
   } catch (error) {

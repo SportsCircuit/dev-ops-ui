@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
 import { microservices } from "@/db/schema";
 import { eq } from "drizzle-orm";
+import { microserviceUpdateSchema } from "@/lib/validators";
 
 // GET /api/microservices/[id]
 export async function GET(
@@ -38,23 +39,17 @@ export async function PUT(
   try {
     const { id } = await params;
     const body = await request.json();
+    const result = microserviceUpdateSchema.safeParse(body);
+    if (!result.success) {
+      return NextResponse.json(
+        { error: "Validation failed", details: result.error.flatten() },
+        { status: 400 }
+      );
+    }
     const [updated] = await db
       .update(microservices)
       .set({
-        name: body.name,
-        owner: body.owner,
-        version: body.version,
-        status: body.status,
-        description: body.description,
-        techStack: body.techStack,
-        dependencies: body.dependencies,
-        repoUrl: body.repoUrl,
-        swaggerUrl: body.swaggerUrl,
-        apiVersion: body.apiVersion,
-        apiType: body.apiType,
-        cpu: body.cpu,
-        memory: body.memory,
-        pods: body.pods,
+        ...result.data,
         updatedAt: new Date(),
       })
       .where(eq(microservices.id, id))

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
 import { portalUsers } from "@/db/schema";
 import { eq } from "drizzle-orm";
+import { userUpdateSchema } from "@/lib/validators";
 
 // GET /api/users/[id]
 export async function GET(
@@ -35,12 +36,17 @@ export async function PUT(
   try {
     const { id } = await params;
     const body = await request.json();
+    const result = userUpdateSchema.safeParse(body);
+    if (!result.success) {
+      return NextResponse.json(
+        { error: "Validation failed", details: result.error.flatten() },
+        { status: 400 }
+      );
+    }
     const [updated] = await db
       .update(portalUsers)
       .set({
-        name: body.name,
-        role: body.role,
-        access: body.access,
+        ...result.data,
         updatedAt: new Date(),
       })
       .where(eq(portalUsers.id, id))

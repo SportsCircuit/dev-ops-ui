@@ -3,20 +3,20 @@ import { db } from "@/db";
 import { categories, tools, microservices, portalUsers } from "@/db/schema";
 import { sql } from "drizzle-orm";
 
-// Seed data - previously hardcoded values
+// Seed data
 const seedCategories = [
-  { name: "All", sortOrder: "0" },
-  { name: "Observability", sortOrder: "1" },
-  { name: "Logging", sortOrder: "2" },
-  { name: "Metrics", sortOrder: "3" },
-  { name: "Tracing", sortOrder: "4" },
-  { name: "Container", sortOrder: "5" },
-  { name: "CI/CD", sortOrder: "6" },
-  { name: "Messaging", sortOrder: "7" },
-  { name: "Database", sortOrder: "8" },
-  { name: "Documentation", sortOrder: "9" },
-  { name: "Frontend", sortOrder: "10" },
-  { name: "Health", sortOrder: "11" },
+  { name: "All", sortOrder: 0 },
+  { name: "Observability", sortOrder: 1 },
+  { name: "Logging", sortOrder: 2 },
+  { name: "Metrics", sortOrder: 3 },
+  { name: "Tracing", sortOrder: 4 },
+  { name: "Container", sortOrder: 5 },
+  { name: "CI/CD", sortOrder: 6 },
+  { name: "Messaging", sortOrder: 7 },
+  { name: "Database", sortOrder: 8 },
+  { name: "Documentation", sortOrder: 9 },
+  { name: "Frontend", sortOrder: 10 },
+  { name: "Health", sortOrder: 11 },
 ];
 
 const seedTools = [
@@ -223,32 +223,28 @@ const seedUsers = [
 
 // POST /api/seed - Seed the database with initial data
 export async function POST() {
+  // Block in production
+  if (process.env.NODE_ENV === "production") {
+    return NextResponse.json(
+      { error: "Seeding is disabled in production" },
+      { status: 403 }
+    );
+  }
+
   try {
-    // Clear existing data
-    await db.delete(tools);
-    await db.delete(microservices);
-    await db.delete(portalUsers);
-    await db.delete(categories);
+    await db.transaction(async (tx) => {
+      // Clear existing data (order matters for FK)
+      await tx.delete(tools);
+      await tx.delete(microservices);
+      await tx.delete(portalUsers);
+      await tx.delete(categories);
 
-    // Seed categories
-    for (const cat of seedCategories) {
-      await db.insert(categories).values(cat).onConflictDoNothing();
-    }
-
-    // Seed tools
-    for (const tool of seedTools) {
-      await db.insert(tools).values(tool);
-    }
-
-    // Seed microservices
-    for (const service of seedMicroservices) {
-      await db.insert(microservices).values(service);
-    }
-
-    // Seed users
-    for (const user of seedUsers) {
-      await db.insert(portalUsers).values(user);
-    }
+      // Batch inserts
+      await tx.insert(categories).values(seedCategories).onConflictDoNothing();
+      await tx.insert(tools).values(seedTools);
+      await tx.insert(microservices).values(seedMicroservices);
+      await tx.insert(portalUsers).values(seedUsers);
+    });
 
     // Get counts
     const [toolCount] = await db

@@ -17,7 +17,7 @@ body {
   font-family: var(--font-sans), "Inter", system-ui, sans-serif;
 }
 
-/* Custom scrollbar */
+/* Custom scrollbar — WebKit */
 ::-webkit-scrollbar {
   width: 5px;
   height: 5px;
@@ -33,6 +33,12 @@ body {
   background: rgba(0, 0, 0, 0.18);
 }
 
+/* Custom scrollbar — Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.1) transparent;
+}
+
 /* Selection */
 ::selection {
   background: rgba(43, 127, 255, 0.14);
@@ -45,4 +51,29 @@ body {
 .scrollbar-hide {
   -ms-overflow-style: none;
   scrollbar-width: none;
+}
+
+/* Mobile sidebar slide-in */
+@keyframes slide-in {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+.animate-slide-in {
+  animation: slide-in 0.2s ease-out;
+}
+
+/* Reduced motion: honour user preference */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
