@@ -1,5 +1,3 @@
-"use client";
-
 import { ExternalLink, GitBranch } from "lucide-react";
 import { Microservice } from "@/types";
 

@@ -1,4 +1,5 @@
-import { ExternalLink, Copy, MoreHorizontal, Globe } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
+import { ExternalLink, Copy, MoreHorizontal, Globe, Trash2, Pencil, Check } from "lucide-react";
 import { Tool, Environment, ToolStatus } from "@/types";
 
 const environmentStyles: Record<Environment, { bg: string; text: string }> = {
@@ -25,9 +26,34 @@ const statusLabel: Record<ToolStatus, string> = {
 
 interface ToolCardProps {
   tool: Tool;
+  onDelete?: (id: string) => void;
+  onEdit?: (id: string) => void;
 }
 
-export default function ToolCard({ tool }: ToolCardProps) {
+export default function ToolCard({ tool, onDelete, onEdit }: ToolCardProps) {
+  const [copied, setCopied] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  const handleCopyUrl = async () => {
+    if (tool.url) {
+      await navigator.clipboard.writeText(tool.url);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    }
+  };
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    if (!menuOpen) return;
+    const handler = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setMenuOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [menuOpen]);
   return (
     <article
       aria-label={`${tool.name} — ${statusLabel[tool.status]}`}
@@ -52,17 +78,62 @@ export default function ToolCard({ tool }: ToolCardProps) {
             <ExternalLink className="w-2.5 h-2.5 text-[#717182]" aria-hidden="true" />
           </a>
           <button
+            onClick={handleCopyUrl}
             className="flex items-center justify-center w-5 h-5 rounded hover:bg-[#eceef2]/60 transition-colors focus:outline-none focus:ring-2 focus:ring-[#2b7fff]/20"
-            aria-label={`Copy URL for ${tool.name}`}
+            aria-label={copied ? "URL copied" : `Copy URL for ${tool.name}`}
           >
-            <Copy className="w-2.5 h-2.5 text-[#717182]" aria-hidden="true" />
+            {copied ? (
+              <Check className="w-2.5 h-2.5 text-emerald-500" aria-hidden="true" />
+            ) : (
+              <Copy className="w-2.5 h-2.5 text-[#717182]" aria-hidden="true" />
+            )}
           </button>
-          <button
-            className="flex items-center justify-center w-5 h-5 rounded hover:bg-[#eceef2]/60 transition-colors focus:outline-none focus:ring-2 focus:ring-[#2b7fff]/20"
-            aria-label={`More options for ${tool.name}`}
-          >
-            <MoreHorizontal className="w-2.5 h-2.5 text-[#717182]" aria-hidden="true" />
-          </button>
+          <div className="relative" ref={menuRef}>
+            {(onEdit || onDelete) && (
+            <button
+              onClick={() => setMenuOpen(!menuOpen)}
+              className="flex items-center justify-center w-5 h-5 rounded hover:bg-[#eceef2]/60 transition-colors focus:outline-none focus:ring-2 focus:ring-[#2b7fff]/20"
+              aria-label={`More options for ${tool.name}`}
+              aria-expanded={menuOpen}
+              aria-haspopup="menu"
+            >
+              <MoreHorizontal className="w-2.5 h-2.5 text-[#717182]" aria-hidden="true" />
+            </button>
+            )}
+            {menuOpen && (
+              <div
+                role="menu"
+                className="absolute right-0 top-full mt-1 w-32 bg-white border border-black/8 rounded-lg shadow-lg z-20 py-1"
+              >
+                {onEdit && (
+                  <button
+                    role="menuitem"
+                    onClick={() => {
+                      setMenuOpen(false);
+                      onEdit(tool.id);
+                    }}
+                    className="flex items-center gap-2 w-full px-3 py-1.5 text-left text-xs text-[#0a0a0a] hover:bg-[#eceef2]/50 transition-colors"
+                  >
+                    <Pencil className="w-3 h-3" aria-hidden="true" />
+                    Edit
+                  </button>
+                )}
+                {onDelete && (
+                  <button
+                    role="menuitem"
+                    onClick={() => {
+                      setMenuOpen(false);
+                      onDelete(tool.id);
+                    }}
+                    className="flex items-center gap-2 w-full px-3 py-1.5 text-left text-xs text-[#d4183d] hover:bg-red-50 transition-colors"
+                  >
+                    <Trash2 className="w-3 h-3" aria-hidden="true" />
+                    Delete
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
         </div>
       </div>
 

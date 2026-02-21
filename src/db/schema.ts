@@ -62,6 +62,8 @@ export const portalUsers = opsSchema.table("portal_users", {
   name: varchar("name", { length: 255 }).notNull(),
   role: varchar("role", { length: 50 }).notNull(),
   access: jsonb("access").$type<string[]>().notNull(),
+  email: varchar("email", { length: 255 }).unique(),
+  passwordHash: varchar("password_hash", { length: 255 }),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });

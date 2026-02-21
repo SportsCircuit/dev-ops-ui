@@ -1,11 +1,11 @@
-"use client";
-
 import { useState, useEffect, useCallback } from "react";
-import { Plus, Pencil, Trash2 } from "lucide-react";
+import { Plus, Pencil, Trash2, Database, RefreshCw } from "lucide-react";
 import { Environment, PortalUser, UserRole } from "@/types";
-import { fetchUsers, createUser, deleteUser } from "@/lib/api";
+import { fetchUsers, createUser, updateUser, deleteUser, seedDatabase } from "@/lib/api";
+import { useAuth } from "@/context/AuthContext";
 import Header from "@/components/Header";
 import AddUserModal, { NewUserData } from "@/components/AddUserModal";
+import Modal from "@/components/ui/Modal";
 
 const roleStyles: Record<UserRole, { bg: string; text: string }> = {
   Admin: { bg: "bg-[#d4183d]", text: "text-white" },
@@ -33,11 +33,16 @@ const avatarColors = [
 ];
 
 export default function SettingsPage() {
+  const { isAdmin } = useAuth();
   const [selectedEnvironment, setSelectedEnvironment] = useState<
     Environment | "All"
   >("Prod");
   const [usersList, setUsersList] = useState<PortalUser[]>([]);
   const [addModalOpen, setAddModalOpen] = useState(false);
+  const [editingUser, setEditingUser] = useState<PortalUser | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<PortalUser | null>(null);
+  const [seeding, setSeeding] = useState(false);
+  const [feedback, setFeedback] = useState<{ type: "success" | "error"; message: string } | null>(null);
   const [loading, setLoading] = useState(true);
 
   const loadData = useCallback(async () => {
@@ -46,7 +51,8 @@ export default function SettingsPage() {
       const data = await fetchUsers();
       setUsersList(data);
     } catch (error) {
-      console.error("Failed to load users:", error);
+      const msg = error instanceof Error ? error.message : "Failed to load users.";
+      console.error("Failed to load users:", msg, error);
     } finally {
       setLoading(false);
     }
@@ -64,18 +70,70 @@ export default function SettingsPage() {
         access: data.access,
       });
       setUsersList((prev) => [created, ...prev]);
+      showFeedback("success", `User "${data.name}" created.`);
     } catch (error) {
-      console.error("Failed to create user:", error);
+      const msg = error instanceof Error ? error.message : "Failed to create user.";
+      console.error("Failed to create user:", msg, error);
+      showFeedback("error", msg);
     }
   };
 
-  const handleDeleteUser = async (id: string) => {
+  const handleEditUser = async (data: NewUserData) => {
+    if (!editingUser) return;
     try {
-      await deleteUser(id);
-      setUsersList((prev) => prev.filter((u) => u.id !== id));
+      const updated = await updateUser(editingUser.id, {
+        name: data.name,
+        role: data.role,
+        access: data.access,
+      });
+      setUsersList((prev) => prev.map((u) => (u.id === editingUser.id ? updated : u)));
+      setEditingUser(null);
+      showFeedback("success", `User "${data.name}" updated.`);
     } catch (error) {
-      console.error("Failed to delete user:", error);
+      const msg = error instanceof Error ? error.message : "Failed to update user.";
+      console.error("Failed to update user:", msg, error);
+      showFeedback("error", msg);
     }
+  };
+
+  const confirmDeleteUser = async () => {
+    if (!deleteTarget) return;
+    try {
+      await deleteUser(deleteTarget.id);
+      setUsersList((prev) => prev.filter((u) => u.id !== deleteTarget.id));
+      showFeedback("success", `User "${deleteTarget.name}" deleted.`);
+    } catch (error) {
+      const msg = error instanceof Error ? error.message : "Failed to delete user.";
+      console.error("Failed to delete user:", msg, error);
+      showFeedback("error", msg);
+    } finally {
+      setDeleteTarget(null);
+    }
+  };
+
+  const handleSeedDatabase = async () => {
+    try {
+      setSeeding(true);
+      const result = await seedDatabase();
+      showFeedback("success", result.message || "Database seeded successfully.");
+      await loadData();
+    } catch (error) {
+      const msg = error instanceof Error ? error.message : "Failed to seed database.";
+      console.error("Failed to seed database:", msg, error);
+      showFeedback("error", msg);
+    } finally {
+      setSeeding(false);
+    }
+  };
+
+  const showFeedback = (type: "success" | "error", message: string) => {
+    setFeedback({ type, message });
+    setTimeout(() => setFeedback(null), 4000);
+  };
+
+  const handleDeleteUser = async (id: string) => {
+    const user = usersList.find((u) => u.id === id);
+    if (user) setDeleteTarget(user);
   };
 
   return (
@@ -112,15 +170,17 @@ export default function SettingsPage() {
                   Manage users, their roles, and environment access.
                 </p>
               </div>
-              <button
-                onClick={() => setAddModalOpen(true)}
-                className="inline-flex items-center gap-1.5 px-3.5 h-9 rounded-lg bg-[#030213] text-[13px] font-medium text-white hover:bg-[#030213]/90 transition-colors shrink-0 focus:outline-none focus:ring-2 focus:ring-[#2b7fff]/20"
-                aria-label="Add new user"
-              >
-                <Plus className="w-4 h-4" aria-hidden="true" />
-                <span className="hidden sm:inline">Add User</span>
-                <span className="sm:hidden">Add</span>
-              </button>
+              {isAdmin && (
+                <button
+                  onClick={() => setAddModalOpen(true)}
+                  className="inline-flex items-center gap-1.5 px-3.5 h-9 rounded-lg bg-[#030213] text-[13px] font-medium text-white hover:bg-[#030213]/90 transition-colors shrink-0 focus:outline-none focus:ring-2 focus:ring-[#2b7fff]/20"
+                  aria-label="Add new user"
+                >
+                  <Plus className="w-4 h-4" aria-hidden="true" />
+                  <span className="hidden sm:inline">Add User</span>
+                  <span className="sm:hidden">Add</span>
+                </button>
+              )}
             </div>
 
             {/* Table */}
@@ -144,9 +204,11 @@ export default function SettingsPage() {
                     <th scope="col" className="text-left px-2 py-2 text-xs font-medium text-[#717182]">
                       Access
                     </th>
-                    <th scope="col" className="text-right px-2 py-2 text-xs font-medium text-[#717182]">
-                      Actions
-                    </th>
+                    {isAdmin && (
+                      <th scope="col" className="text-right px-2 py-2 text-xs font-medium text-[#717182]">
+                        Actions
+                      </th>
+                    )}
                   </tr>
                 </thead>
                 <tbody>
@@ -195,23 +257,26 @@ export default function SettingsPage() {
                           </div>
                         </td>
                         {/* Actions */}
-                        <td className="px-2 py-2.5">
-                          <div className="flex items-center justify-end gap-1">
-                            <button
-                              className="w-8 h-8 flex items-center justify-center rounded-md text-[#717182] hover:text-[#0a0a0a] hover:bg-[#eceef2]/50 transition-colors focus:outline-none focus:ring-2 focus:ring-[#2b7fff]/20"
-                              aria-label={`Edit ${user.name}`}
-                            >
-                              <Pencil className="w-3.5 h-3.5" aria-hidden="true" />
-                            </button>
-                            <button
-                              onClick={() => handleDeleteUser(user.id)}
-                              className="w-8 h-8 flex items-center justify-center rounded-md text-[#d4183d] hover:text-[#c10007] hover:bg-red-50 transition-colors focus:outline-none focus:ring-2 focus:ring-[#2b7fff]/20"
-                              aria-label={`Delete ${user.name}`}
-                            >
-                              <Trash2 className="w-3.5 h-3.5" aria-hidden="true" />
-                            </button>
-                          </div>
-                        </td>
+                        {isAdmin && (
+                          <td className="px-2 py-2.5">
+                            <div className="flex items-center justify-end gap-1">
+                              <button
+                                onClick={() => setEditingUser(user)}
+                                className="w-8 h-8 flex items-center justify-center rounded-md text-[#717182] hover:text-[#0a0a0a] hover:bg-[#eceef2]/50 transition-colors focus:outline-none focus:ring-2 focus:ring-[#2b7fff]/20"
+                                aria-label={`Edit ${user.name}`}
+                              >
+                                <Pencil className="w-3.5 h-3.5" aria-hidden="true" />
+                              </button>
+                              <button
+                                onClick={() => handleDeleteUser(user.id)}
+                                className="w-8 h-8 flex items-center justify-center rounded-md text-[#d4183d] hover:text-[#c10007] hover:bg-red-50 transition-colors focus:outline-none focus:ring-2 focus:ring-[#2b7fff]/20"
+                                aria-label={`Delete ${user.name}`}
+                              >
+                                <Trash2 className="w-3.5 h-3.5" aria-hidden="true" />
+                              </button>
+                            </div>
+                          </td>
+                        )}
                       </tr>
                     );
                   })}
@@ -221,8 +286,58 @@ export default function SettingsPage() {
               )}
             </div>
           </div>
+
+          {/* Database Seed Section */}
+          <div className="bg-white border border-black/8 rounded-lg shadow-sm">
+            <div className="flex items-center justify-between px-3 sm:px-5 py-5 gap-3">
+              <div>
+                <h3 className="text-base font-semibold text-[#0a0a0a] tracking-tight">
+                  Database Management
+                </h3>
+                <p className="text-xs text-[#717182] mt-0.5">
+                  Seed the database with sample data for development and testing.
+                </p>
+              </div>
+              <div className="flex items-center gap-2 shrink-0">
+                <button
+                  onClick={loadData}
+                  className="inline-flex items-center gap-1.5 px-3.5 h-9 rounded-lg border border-black/8 text-[13px] font-medium text-[#0a0a0a] hover:bg-[#eceef2]/50 transition-colors focus:outline-none focus:ring-2 focus:ring-[#2b7fff]/20"
+                  aria-label="Refresh users"
+                >
+                  <RefreshCw className="w-4 h-4" aria-hidden="true" />
+                  <span className="hidden sm:inline">Refresh</span>
+                </button>
+                {isAdmin && (
+                  <button
+                    onClick={handleSeedDatabase}
+                    disabled={seeding}
+                    className="inline-flex items-center gap-1.5 px-3.5 h-9 rounded-lg bg-[#030213] text-[13px] font-medium text-white hover:bg-[#030213]/90 transition-colors shrink-0 focus:outline-none focus:ring-2 focus:ring-[#2b7fff]/20 disabled:opacity-50"
+                    aria-label="Seed database"
+                  >
+                    <Database className="w-4 h-4" aria-hidden="true" />
+                    {seeding ? "Seeding..." : "Seed Database"}
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
         </div>
       </main>
+
+      {/* Feedback Toast */}
+      {feedback && (
+        <div
+          className={`fixed bottom-4 right-4 z-50 px-4 py-3 rounded-lg shadow-lg text-sm font-medium ${
+            feedback.type === "success"
+              ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+              : "bg-red-50 text-red-700 border border-red-200"
+          }`}
+          role="status"
+          aria-live="polite"
+        >
+          {feedback.message}
+        </div>
+      )}
 
       {/* Add User Modal */}
       <AddUserModal
@@ -230,6 +345,37 @@ export default function SettingsPage() {
         onClose={() => setAddModalOpen(false)}
         onSubmit={handleAddUser}
       />
+
+      {/* Edit User Modal */}
+      <AddUserModal
+        open={!!editingUser}
+        onClose={() => setEditingUser(null)}
+        onSubmit={handleEditUser}
+        initialData={editingUser ? { name: editingUser.name, role: editingUser.role, access: editingUser.access } : undefined}
+      />
+
+      {/* Delete Confirmation Modal */}
+      <Modal
+        open={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        title="Confirm Delete"
+        description={`Are you sure you want to delete "${deleteTarget?.name}"? This action cannot be undone.`}
+      >
+        <div className="flex justify-end gap-2 pt-2">
+          <button
+            onClick={() => setDeleteTarget(null)}
+            className="px-3.5 h-9 rounded-lg border border-black/8 text-[13px] font-medium text-[#0a0a0a] hover:bg-[#eceef2]/50 transition-colors focus:outline-none focus:ring-2 focus:ring-[#2b7fff]/20"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={confirmDeleteUser}
+            className="px-3.5 h-9 rounded-lg bg-[#d4183d] text-[13px] font-medium text-white hover:bg-[#c10007] transition-colors focus:outline-none focus:ring-2 focus:ring-[#2b7fff]/20"
+          >
+            Delete
+          </button>
+        </div>
+      </Modal>
     </div>
   );
 }

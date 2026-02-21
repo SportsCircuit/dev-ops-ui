@@ -1,6 +1,4 @@
-"use client";
-
-import { useState, useId } from "react";
+import { useState, useId, useEffect } from "react";
 import { ChevronDown, Plus, X } from "lucide-react";
 import { Microservice } from "@/types";
 import Modal from "@/components/ui/Modal";
@@ -31,6 +29,7 @@ interface AddServiceModalProps {
   onClose: () => void;
   onSubmit: (data: NewServiceData) => void;
   existingServices: Microservice[];
+  initialData?: NewServiceData;
 }
 
 const dependencyTypes = [
@@ -52,6 +51,7 @@ export default function AddServiceModal({
   onClose,
   onSubmit,
   existingServices,
+  initialData,
 }: AddServiceModalProps) {
   const uid = useId();
   const [name, setName] = useState("");
@@ -76,6 +76,25 @@ export default function AddServiceModal({
   const [depTypeOpen, setDepTypeOpen] = useState(false);
   const [depNameOpen, setDepNameOpen] = useState(false);
   const [depConnectionOpen, setDepConnectionOpen] = useState(false);
+
+  useEffect(() => {
+    if (initialData && open) {
+      setName(initialData.name);
+      setDescription(initialData.description);
+      setOwner(initialData.owner);
+      setVersion(initialData.version);
+      setCluster(initialData.cluster);
+      setPort(initialData.port);
+      setInstances(initialData.instances);
+      setRepoUrl(initialData.repoUrl);
+      setSwaggerUrl(initialData.swaggerUrl);
+      setProductionUrl(initialData.productionUrl);
+      setTechStack(initialData.techStack);
+      setDependencies(initialData.dependencies || []);
+    } else if (!initialData && open) {
+      resetForm();
+    }
+  }, [initialData, open]);
 
   const resetForm = () => {
     setName("");
@@ -107,7 +126,18 @@ export default function AddServiceModal({
     }
   };
 
+  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
+
   const handleSubmit = () => {
+    const errs: Record<string, string> = {};
+    if (!name.trim()) errs.name = "Service name is required.";
+    if (!owner.trim()) errs.owner = "Owner is required.";
+    if (!version.trim()) errs.version = "Version is required.";
+    if (Object.keys(errs).length) {
+      setValidationErrors(errs);
+      return;
+    }
+    setValidationErrors({});
     onSubmit({
       name,
       description,
@@ -123,7 +153,6 @@ export default function AddServiceModal({
       dependencies,
     });
     resetForm();
-    onClose();
   };
 
   const inputClass =
@@ -135,8 +164,8 @@ export default function AddServiceModal({
     <Modal
       open={open}
       onClose={onClose}
-      title="Add New Microservice"
-      description="Register a new microservice to the dashboard."
+      title={initialData ? "Edit Microservice" : "Add New Microservice"}
+      description={initialData ? "Update the microservice details." : "Register a new microservice to the dashboard."}
     >
       <div className="space-y-3.5">
         {/* Service Name */}
@@ -150,6 +179,7 @@ export default function AddServiceModal({
             onChange={(e) => setName(e.target.value)}
             className={inputClass}
           />
+          {validationErrors.name && <p className="text-xs text-red-500 mt-0.5">{validationErrors.name}</p>}
         </div>
 
         {/* Description */}
@@ -177,6 +207,7 @@ export default function AddServiceModal({
               onChange={(e) => setOwner(e.target.value)}
               className={inputClass}
             />
+            {validationErrors.owner && <p className="text-xs text-red-500 mt-0.5">{validationErrors.owner}</p>}
           </div>
           <div className="space-y-1.5">
             <label htmlFor={`${uid}-ver`} className={labelClass}>Initial Version</label>
@@ -188,6 +219,7 @@ export default function AddServiceModal({
               onChange={(e) => setVersion(e.target.value)}
               className={inputClass}
             />
+            {validationErrors.version && <p className="text-xs text-red-500 mt-0.5">{validationErrors.version}</p>}
           </div>
         </div>
 
@@ -479,7 +511,7 @@ export default function AddServiceModal({
             onClick={handleSubmit}
             className="h-10 px-4 rounded-lg bg-[#030213] text-sm font-medium text-white hover:bg-[#030213]/90 transition-colors focus:outline-none focus:ring-2 focus:ring-[#2b7fff]/20"
           >
-            Add Microservice
+            {initialData ? "Save Changes" : "Add Microservice"}
           </button>
         </div>
       </div>

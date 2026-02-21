@@ -80,4 +80,5 @@ export interface PortalUser {
   name: string;
   role: UserRole;
   access: Environment[];
+  email?: string;
 }

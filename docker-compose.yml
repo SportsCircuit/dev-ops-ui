@@ -1,22 +1,22 @@
-version: "3.8"
-
 services:
-  db:
-    image: postgres:16-alpine
-    container_name: devops-portal-db
-    ports:
-      - "5432:5432"
+  # ── Flyway Migrations ────────────────────────────────────
+  # Runs against the shared sc-postgres container from
+  # the parent SportsCircuit docker-compose stack.
+  flyway:
+    image: flyway/flyway:11-alpine
+    container_name: devops-portal-flyway
+    networks:
+      - sc-net
     environment:
-      POSTGRES_USER: sports
-      POSTGRES_PASSWORD: sports_secret
-      POSTGRES_DB: sports_circuit
+      FLYWAY_URL: jdbc:postgresql://sc-postgres:5432/${DB_NAME:-sports_circuit}
+      FLYWAY_USER: ${DB_USER:-sports}
+      FLYWAY_PASSWORD: ${DB_PASSWORD:-sports_secret}
     volumes:
-      - pg-data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U sports -d sports_circuit"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
+      - ./flyway/sql:/flyway/sql:ro
+      - ./flyway/conf:/flyway/conf:ro
+    command: migrate
 
-volumes:
-  pg-data:
+networks:
+  sc-net:
+    external: true
+    name: sports-circuit-net

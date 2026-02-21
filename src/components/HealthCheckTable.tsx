@@ -1,15 +1,20 @@
 import React from "react";
+import { Trash2, Pencil } from "lucide-react";
 import { Microservice, ServiceStatus } from "@/types";
 import { statusConfig } from "@/lib/constants";
 
 interface HealthCheckTableProps {
   services: Microservice[];
   environment: string;
+  onDelete?: (id: string) => void;
+  onEdit?: (id: string) => void;
 }
 
 export default function HealthCheckTable({
   services,
   environment,
+  onDelete,
+  onEdit,
 }: HealthCheckTableProps) {
   return (
     <div className="bg-white border border-black/8 rounded-lg shadow-sm">
@@ -42,6 +47,11 @@ export default function HealthCheckTable({
                 <th scope="col" className="text-left px-3 py-2.5 text-xs font-medium text-[#717182]">
                   Status
                 </th>
+                {(onDelete || onEdit) && (
+                  <th scope="col" className="text-right px-3 py-2.5 text-xs font-medium text-[#717182]">
+                    Actions
+                  </th>
+                )}
               </tr>
             </thead>
             <tbody>
@@ -71,6 +81,30 @@ export default function HealthCheckTable({
                         {config.label}
                       </span>
                     </td>
+                    {(onDelete || onEdit) && (
+                      <td className="px-3 py-3 text-right">
+                        <div className="flex items-center justify-end gap-1">
+                          {onEdit && (
+                            <button
+                              onClick={() => onEdit(service.id)}
+                              className="w-8 h-8 inline-flex items-center justify-center rounded-md text-[#717182] hover:text-[#0a0a0a] hover:bg-[#eceef2]/50 transition-colors focus:outline-none focus:ring-2 focus:ring-[#2b7fff]/20"
+                              aria-label={`Edit ${service.name}`}
+                            >
+                              <Pencil className="w-3.5 h-3.5" aria-hidden="true" />
+                            </button>
+                          )}
+                          {onDelete && (
+                            <button
+                              onClick={() => onDelete(service.id)}
+                              className="w-8 h-8 inline-flex items-center justify-center rounded-md text-[#d4183d] hover:text-[#c10007] hover:bg-red-50 transition-colors focus:outline-none focus:ring-2 focus:ring-[#2b7fff]/20"
+                              aria-label={`Delete ${service.name}`}
+                            >
+                              <Trash2 className="w-3.5 h-3.5" aria-hidden="true" />
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                    )}
                   </tr>
                 );
               })}

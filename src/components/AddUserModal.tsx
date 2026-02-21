@@ -1,6 +1,4 @@
-"use client";
-
-import { useState, useId } from "react";
+import { useState, useId, useEffect } from "react";
 import { Environment, UserRole } from "@/types";
 import Modal from "@/components/ui/Modal";
 import { ChevronDown } from "lucide-react";
@@ -15,6 +13,7 @@ interface AddUserModalProps {
   open: boolean;
   onClose: () => void;
   onSubmit: (data: NewUserData) => void;
+  initialData?: NewUserData;
 }
 
 const roles: UserRole[] = ["Admin", "DevOps", "Dev", "QA", "Viewer"];
@@ -24,12 +23,27 @@ export default function AddUserModal({
   open,
   onClose,
   onSubmit,
+  initialData,
 }: AddUserModalProps) {
   const uid = useId();
-  const [name, setName] = useState("");
-  const [role, setRole] = useState<UserRole>("Dev");
-  const [access, setAccess] = useState<Environment[]>([]);
+  const [name, setName] = useState(initialData?.name ?? "");
+  const [role, setRole] = useState<UserRole>(initialData?.role ?? "Dev");
+  const [access, setAccess] = useState<Environment[]>(initialData?.access ?? []);
   const [roleOpen, setRoleOpen] = useState(false);
+  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
+
+  // Sync state when initialData changes (edit mode)
+  useEffect(() => {
+    if (initialData) {
+      setName(initialData.name);
+      setRole(initialData.role);
+      setAccess(initialData.access);
+    } else {
+      setName("");
+      setRole("Dev");
+      setAccess([]);
+    }
+  }, [initialData, open]);
 
   const toggleAccess = (env: Environment) => {
     setAccess((prev) =>
@@ -38,7 +52,14 @@ export default function AddUserModal({
   };
 
   const handleSubmit = () => {
-    if (!name.trim()) return;
+    const errs: Record<string, string> = {};
+    if (!name.trim()) errs.name = "Full name is required.";
+    if (access.length === 0) errs.access = "Select at least one environment.";
+    if (Object.keys(errs).length) {
+      setValidationErrors(errs);
+      return;
+    }
+    setValidationErrors({});
     onSubmit({ name: name.trim(), role, access });
     setName("");
     setRole("Dev");
@@ -57,8 +78,8 @@ export default function AddUserModal({
     <Modal
       open={open}
       onClose={handleClose}
-      title="Add New User"
-      description="Configure user details and permissions."
+      title={initialData ? "Edit User" : "Add New User"}
+      description={initialData ? "Update user details and permissions." : "Configure user details and permissions."}
     >
       <div className="space-y-3.5">
         {/* Full Name */}
@@ -74,6 +95,7 @@ export default function AddUserModal({
             placeholder="e.g. John Doe"
             className="w-full h-10 px-3 rounded-lg border border-black/10 text-sm text-[#0a0a0a] placeholder:text-[#717182] outline-none focus:ring-2 focus:ring-[#2b7fff]/20 focus:border-[#030213] transition-colors"
           />
+          {validationErrors.name && <p className="text-xs text-red-500 mt-0.5">{validationErrors.name}</p>}
         </div>
 
         {/* Role */}
@@ -172,6 +194,7 @@ export default function AddUserModal({
               );
             })}
           </div>
+          {validationErrors.access && <p className="text-xs text-red-500 mt-0.5">{validationErrors.access}</p>}
         </fieldset>
 
         {/* Footer buttons */}
@@ -186,7 +209,7 @@ export default function AddUserModal({
             onClick={handleSubmit}
             className="h-9 px-3.5 rounded-lg bg-[#030213] text-[13px] font-medium text-white hover:bg-[#030213]/90 transition-colors focus:outline-none focus:ring-2 focus:ring-[#2b7fff]/20"
           >
-            Save User
+            {initialData ? "Save Changes" : "Save User"}
           </button>
         </div>
       </div>

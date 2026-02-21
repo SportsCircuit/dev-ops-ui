@@ -1,5 +1,3 @@
-"use client";
-
 import { ChevronDown, Globe } from "lucide-react";
 import { Environment } from "@/types";
 import { useState, useRef, useEffect, useCallback } from "react";

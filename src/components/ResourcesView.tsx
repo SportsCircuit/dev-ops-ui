@@ -1,5 +1,3 @@
-"use client";
-
 import React from "react";
 import { Microservice } from "@/types";
 import { statusConfig } from "@/lib/constants";

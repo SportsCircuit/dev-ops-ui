@@ -1,6 +1,4 @@
-"use client";
-
-import { useState, useId } from "react";
+import { useState, useId, useEffect } from "react";
 import { ChevronDown } from "lucide-react";
 import { Category, Environment } from "@/types";
 import Modal from "@/components/ui/Modal";
@@ -16,6 +14,13 @@ interface AddLinkModalProps {
     environments: Environment[];
     description: string;
   }) => void;
+  initialData?: {
+    title: string;
+    url: string;
+    category: Category;
+    environments: Environment[];
+    description: string;
+  };
 }
 
 const allEnvironments: Environment[] = ["Local", "Dev", "QA", "Stage", "Prod"];
@@ -25,6 +30,7 @@ export default function AddLinkModal({
   onClose,
   categories,
   onSubmit,
+  initialData,
 }: AddLinkModalProps) {
   const uid = useId();
   const formCategories = categories.filter(
@@ -36,6 +42,25 @@ export default function AddLinkModal({
   const [categoryOpen, setCategoryOpen] = useState(false);
   const [environments, setEnvironments] = useState<Environment[]>([]);
   const [description, setDescription] = useState("");
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  // Sync state when initialData changes (edit mode) or modal opens
+  useEffect(() => {
+    if (initialData) {
+      setTitle(initialData.title);
+      setUrl(initialData.url);
+      setCategory(initialData.category);
+      setEnvironments(initialData.environments);
+      setDescription(initialData.description);
+    } else {
+      setTitle("");
+      setUrl("");
+      setCategory("Logging");
+      setEnvironments([]);
+      setDescription("");
+    }
+    setErrors({});
+  }, [initialData, open]);
 
   const toggleEnv = (env: Environment) => {
     setEnvironments((prev) =>
@@ -44,21 +69,31 @@ export default function AddLinkModal({
   };
 
   const handleSubmit = () => {
+    const newErrors: Record<string, string> = {};
+    if (!title.trim()) newErrors.title = "Title is required.";
+    if (!url.trim()) newErrors.url = "URL is required.";
+    else if (!/^https?:\/\/.+/i.test(url.trim())) newErrors.url = "Enter a valid URL starting with http(s)://";
+    if (!description.trim()) newErrors.description = "Description is required.";
+    if (environments.length === 0) newErrors.environments = "Select at least one environment.";
+    if (Object.keys(newErrors).length) {
+      setErrors(newErrors);
+      return;
+    }
+    setErrors({});
     onSubmit({ title, url, category, environments, description });
     setTitle("");
     setUrl("");
     setCategory("Logging");
     setEnvironments([]);
     setDescription("");
-    onClose();
   };
 
   return (
     <Modal
       open={open}
       onClose={onClose}
-      title="Add New Link"
-      description="Fill out the form to add a new tool link to the dashboard."
+      title={initialData ? "Edit Link" : "Add New Link"}
+      description={initialData ? "Update the tool link details." : "Fill out the form to add a new tool link to the dashboard."}
     >
       <div className="space-y-3.5">
         {/* Title */}
@@ -74,6 +109,7 @@ export default function AddLinkModal({
             onChange={(e) => setTitle(e.target.value)}
             className="w-full h-10 px-3 text-sm border border-black/10 rounded-lg bg-white placeholder:text-[#717182] text-[#0a0a0a] focus:outline-none focus:ring-2 focus:ring-[#2b7fff]/20 focus:border-[#2b7fff]/40"
           />
+          {errors.title && <p className="text-xs text-red-500 mt-0.5">{errors.title}</p>}
         </div>
 
         {/* URL */}
@@ -89,6 +125,7 @@ export default function AddLinkModal({
             onChange={(e) => setUrl(e.target.value)}
             className="w-full h-10 px-3 text-sm border border-black/10 rounded-lg bg-white placeholder:text-[#717182] text-[#0a0a0a] focus:outline-none focus:ring-2 focus:ring-[#2b7fff]/20 focus:border-[#2b7fff]/40"
           />
+          {errors.url && <p className="text-xs text-red-500 mt-0.5">{errors.url}</p>}
         </div>
 
         {/* Category */}
@@ -186,6 +223,7 @@ export default function AddLinkModal({
               );
             })}
           </div>
+          {errors.environments && <p className="text-xs text-red-500 mt-0.5">{errors.environments}</p>}
         </fieldset>
 
         {/* Description */}
@@ -201,6 +239,7 @@ export default function AddLinkModal({
             rows={3}
             className="w-full px-3 py-2 text-sm border border-black/10 rounded-lg bg-white placeholder:text-[#717182] text-[#0a0a0a] resize-none focus:outline-none focus:ring-2 focus:ring-[#2b7fff]/20 focus:border-[#2b7fff]/40"
           />
+          {errors.description && <p className="text-xs text-red-500 mt-0.5">{errors.description}</p>}
         </div>
 
         {/* Actions */}
@@ -215,7 +254,7 @@ export default function AddLinkModal({
             onClick={handleSubmit}
             className="px-3.5 h-9 rounded-lg bg-[#030213] text-[13px] font-medium text-white hover:bg-[#030213]/90 transition-colors focus:outline-none focus:ring-2 focus:ring-[#2b7fff]/20"
           >
-            Create Link
+            {initialData ? "Save Changes" : "Create Link"}
           </button>
         </div>
       </div>

@@ -59,3 +59,10 @@ export const userSchema = z.object({
 });
 
 export const userUpdateSchema = userSchema.partial();
+
+// ─── Auth ────────────────────────────────────────────────
+
+export const loginSchema = z.object({
+  email: z.string().email("Valid email is required"),
+  password: z.string().min(1, "Password is required"),
+});

@@ -1,5 +1,3 @@
-"use client";
-
 import React from "react";
 import { ExternalLink, Code2, Copy } from "lucide-react";
 import { Microservice } from "@/types";
