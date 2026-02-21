@@ -6,6 +6,7 @@ import { useAuth } from "@/context/AuthContext";
 import Header from "@/components/Header";
 import AddUserModal, { NewUserData } from "@/components/AddUserModal";
 import Modal from "@/components/ui/Modal";
+import ViewToggle, { type ViewMode } from "@/components/ui/ViewToggle";
 
 const roleStyles: Record<UserRole, { bg: string; text: string }> = {
   Admin: { bg: "bg-[#d4183d]", text: "text-white" },
@@ -44,6 +45,7 @@ export default function SettingsPage() {
   const [seeding, setSeeding] = useState(false);
   const [feedback, setFeedback] = useState<{ type: "success" | "error"; message: string } | null>(null);
   const [loading, setLoading] = useState(true);
+  const [userViewMode, setUserViewMode] = useState<ViewMode>("list");
 
   const loadData = useCallback(async () => {
     try {
@@ -170,26 +172,29 @@ export default function SettingsPage() {
                   Manage users, their roles, and environment access.
                 </p>
               </div>
-              {isAdmin && (
-                <button
-                  onClick={() => setAddModalOpen(true)}
-                  className="inline-flex items-center gap-1.5 px-3.5 h-9 rounded-lg bg-[#030213] text-[13px] font-medium text-white hover:bg-[#030213]/90 transition-colors shrink-0 focus:outline-none focus:ring-2 focus:ring-[#2b7fff]/20"
-                  aria-label="Add new user"
-                >
-                  <Plus className="w-4 h-4" aria-hidden="true" />
-                  <span className="hidden sm:inline">Add User</span>
-                  <span className="sm:hidden">Add</span>
-                </button>
-              )}
+              <div className="flex items-center gap-2 shrink-0">
+                <ViewToggle mode={userViewMode} onChange={setUserViewMode} />
+                {isAdmin && (
+                  <button
+                    onClick={() => setAddModalOpen(true)}
+                    className="inline-flex items-center gap-1.5 px-3.5 h-9 rounded-lg bg-[#030213] text-[13px] font-medium text-white hover:bg-[#030213]/90 transition-colors shrink-0 focus:outline-none focus:ring-2 focus:ring-[#2b7fff]/20"
+                    aria-label="Add new user"
+                  >
+                    <Plus className="w-4 h-4" aria-hidden="true" />
+                    <span className="hidden sm:inline">Add User</span>
+                    <span className="sm:hidden">Add</span>
+                  </button>
+                )}
+              </div>
             </div>
 
-            {/* Table */}
+            {/* Table / Card content */}
             <div className="px-3 sm:px-5 pb-5">
               {loading ? (
                 <div className="flex items-center justify-center py-10 text-[#717182]" role="status" aria-live="polite">
                   <p className="text-sm">Loading users...</p>
                 </div>
-              ) : (
+              ) : userViewMode === "list" ? (
               <div className="overflow-x-auto border border-black/8 rounded-lg" tabIndex={0} role="region" aria-label="User management data">
               <table className="w-full min-w-[500px]">
                 <caption className="sr-only">Portal users and their roles</caption>
@@ -282,6 +287,71 @@ export default function SettingsPage() {
                   })}
                 </tbody>
               </table>
+              </div>
+              ) : (
+              /* Card view */
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+                {usersList.map((user, idx) => {
+                  const style = roleStyles[user.role];
+                  const colorClass = avatarColors[idx % avatarColors.length];
+                  return (
+                    <article
+                      key={user.id}
+                      className="bg-white border border-black/8 rounded-lg shadow-sm p-4 flex flex-col gap-3"
+                      aria-label={`${user.name} user card`}
+                    >
+                      {/* Avatar + name */}
+                      <div className="flex items-center gap-3">
+                        <div
+                          className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-semibold shrink-0 ${colorClass}`}
+                          aria-hidden="true"
+                        >
+                          {getInitials(user.name)}
+                        </div>
+                        <div className="min-w-0">
+                          <h4 className="text-[13px] font-semibold text-[#0a0a0a] truncate">{user.name}</h4>
+                          <span
+                            className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold mt-0.5 ${style.bg} ${style.text}`}
+                          >
+                            {user.role}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Access badges */}
+                      <div className="flex flex-wrap gap-1">
+                        {user.access.map((env) => (
+                          <span
+                            key={env}
+                            className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium text-[#0a0a0a] border border-black/8"
+                          >
+                            {env}
+                          </span>
+                        ))}
+                      </div>
+
+                      {/* Actions */}
+                      {isAdmin && (
+                        <div className="flex items-center gap-1 mt-auto pt-2 border-t border-black/6">
+                          <button
+                            onClick={() => setEditingUser(user)}
+                            className="inline-flex items-center gap-1 px-2 h-7 rounded-md text-xs text-[#717182] hover:text-[#0a0a0a] hover:bg-[#eceef2]/50 transition-colors focus:outline-none focus:ring-2 focus:ring-[#2b7fff]/20"
+                            aria-label={`Edit ${user.name}`}
+                          >
+                            <Pencil className="w-3 h-3" aria-hidden="true" /> Edit
+                          </button>
+                          <button
+                            onClick={() => handleDeleteUser(user.id)}
+                            className="inline-flex items-center gap-1 px-2 h-7 rounded-md text-xs text-[#d4183d] hover:bg-red-50 transition-colors focus:outline-none focus:ring-2 focus:ring-[#2b7fff]/20"
+                            aria-label={`Delete ${user.name}`}
+                          >
+                            <Trash2 className="w-3 h-3" aria-hidden="true" /> Delete
+                          </button>
+                        </div>
+                      )}
+                    </article>
+                  );
+                })}
               </div>
               )}
             </div>

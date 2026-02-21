@@ -10,6 +10,7 @@ import CategoryTabs from "@/components/CategoryTabs";
 import ToolSection from "@/components/ToolSection";
 import AddLinkModal from "@/components/AddLinkModal";
 import Modal from "@/components/ui/Modal";
+import ViewToggle, { type ViewMode } from "@/components/ui/ViewToggle";
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -26,6 +27,7 @@ export default function Dashboard() {
   const [deleteTarget, setDeleteTarget] = useState<Tool | null>(null);
   const [feedback, setFeedback] = useState<{ type: "success" | "error"; message: string } | null>(null);
   const [loading, setLoading] = useState(true);
+  const [viewMode, setViewMode] = useState<ViewMode>("card");
 
   const loadData = useCallback(async () => {
     try {
@@ -156,6 +158,7 @@ export default function Dashboard() {
               >
                 <Settings2 className="w-3.5 h-3.5 text-[#717182]" aria-hidden="true" />
               </button>
+              <ViewToggle mode={viewMode} onChange={setViewMode} />
               {isAdmin && (
                 <button
                   onClick={() => setAddModalOpen(true)}
@@ -199,6 +202,7 @@ export default function Dashboard() {
                 tools={groupedTools[cat]}
                 onEditTool={isAdmin ? handleEditTool : undefined}
                 onDeleteTool={isAdmin ? handleDeleteTool : undefined}
+                viewMode={viewMode}
               />
             ))
           ) : (

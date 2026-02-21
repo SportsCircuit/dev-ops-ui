@@ -10,6 +10,7 @@ import {
   GitFork,
 } from "lucide-react";
 import { DependencyType, Microservice } from "@/types";
+import ArchitectureGraph from "@/components/ArchitectureGraph";
 
 interface ArchitectureViewProps {
   services: Microservice[];
@@ -143,11 +144,9 @@ export default function ArchitectureView({
         </div>
       )}
 
-      {/* Graph view placeholder */}
+      {/* Graph view */}
       {viewMode === "graph" && (
-        <div className="flex items-center justify-center py-20 text-[#717182]">
-          <p className="text-sm">Graph view coming soon.</p>
-        </div>
+        <ArchitectureGraph services={services} />
       )}
     </div>
   );
